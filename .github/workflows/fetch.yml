@@ -2,8 +2,8 @@ name: Otomatik Kur Verisi Çekme
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # Her gün otomatik çalışır
-  workflow_dispatch:     # GitHub üzerinden elle tetikleme butonu ekler
+    - cron: '0 9 * * *'
+  workflow_dispatch:
 
 jobs:
   fetch:
@@ -29,6 +29,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/kurlar.json
+          git add -A
           git commit -m "Otomatik kur verisi güncellendi" || exit 0
           git push
