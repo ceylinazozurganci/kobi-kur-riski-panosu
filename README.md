@@ -1,0 +1,1 @@
+# kobi-kur-riski-panosu
