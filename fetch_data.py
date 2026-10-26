@@ -1,25 +1,34 @@
-import os
-import json
-import requests
+name: Otomatik Kur Verisi Çekme
 
-# GitHub Secrets'tan API anahtarını al
-api_key = os.environ.get("EVDS_API_KEY")
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
 
-# TCMB EVDS API adresi (USD ve EUR satış kurları)
-url = f"https://evds2.tcmb.gov.tr/service/evds/series=TP.DK.USD.A-TP.DK.EUR.A&type=json"
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu Klonla
+        uses: actions/checkout@v3
 
-headers = {
-    "key": api_key
-}
+      - name: Python Kur
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-try:
-    response = requests.get(url, headers=headers)
-    data = response.json()
-    
-    # data klasörü yoksa oluştur ve veriyi JSON olarak kaydet
-    os.makedirs("data", exist_ok=True)
-    with open("data/kurlar.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
-    print("Veri başarıyla çekildi ve data/kurlar.json dosyasına kaydedildi.")
-except Exception as e:
-    print("Veri çekme hatası:", e)
+      - name: Kütüphaneleri Yükle
+        run: pip install requests
+
+      - name: Veriyi Çek
+        env:
+          EVDS_API_KEY: ${{ secrets.EVDS_API_KEY }}
+        run: python fetch_data.py
+
+      - name: Değişiklikleri Depoya Kaydet
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Otomatik kur verisi güncellendi" || exit 0
+          git push
