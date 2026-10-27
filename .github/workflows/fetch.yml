@@ -1,4 +1,4 @@
-name: Otomatik Kur Verisi Çekme
+name: Otomatik Kur Verisi Cekme
 
 on:
   schedule:
@@ -17,15 +17,15 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Kütüphaneleri Yükle
+      - name: Kutupahaneleri Yukle
         run: pip install requests pandas
 
-      - name: Veriyi Çek
+      - name: Veriyi Cek
         env:
           EVDS_API_KEY: ${{ secrets.EVDS_API_KEY }}
         run: python fetch_data.py
 
-      - name: Entegrasyon Testlerini Çalıştır
+      - name: Entegrasyon Testleri
         run: |
-          python -c "import pandas as pd; print('Pandas kütüphanesi hazır.')"
-          if [ -f data.json ] || [ -f index.html ]; then echo "Test Başarılı: Proje dosyaları tam."; else exit 1; fi
+          python -c "import pandas as pd; print('OK')"
+          if [ -f index.html ]; then echo "Test OK"; else exit 1; fi
