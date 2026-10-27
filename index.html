@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KOBİ Kur Riski & Hedging Yönetim Panosu</title>
-    <!-- Chart.js Grafikler İçi CDN -->
+    <!-- PWA Desteği -->
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+      }
+    </script>
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -21,7 +28,6 @@
             --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         }
 
-        /* Yüksek Kontrast Modu */
         body.high-contrast {
             --bg-body: #000000;
             --bg-card: #111111;
@@ -49,7 +55,6 @@
             transition: background-color 0.3s ease;
         }
 
-        /* Top Bar */
         header {
             display: flex;
             justify-content: space-between;
@@ -102,7 +107,6 @@
             transform: translateY(-1px);
         }
 
-        /* Layout Grid */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
@@ -133,7 +137,6 @@
             font-weight: 700;
         }
 
-        /* Grid Spans */
         .col-3 { grid-column: span 3; }
         .col-4 { grid-column: span 4; }
         .col-6 { grid-column: span 6; }
@@ -144,7 +147,6 @@
             .col-3, .col-4, .col-6, .col-8 { grid-column: span 12; }
         }
 
-        /* KPI Cards */
         .kpi-val {
             font-size: 2.2rem;
             font-weight: 800;
@@ -163,11 +165,7 @@
         .tag-up { color: var(--accent-success); font-weight: 600; }
         .tag-down { color: var(--accent-danger); font-weight: 600; }
 
-        /* Form & Sliders */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
+        .form-group { margin-bottom: 16px; }
         .form-group label {
             display: flex;
             justify-content: space-between;
@@ -187,17 +185,12 @@
             outline: none;
         }
 
-        .form-control:focus {
-            border-color: var(--accent-primary);
-        }
-
         input[type=range] {
             width: 100%;
             accent-color: var(--accent-primary);
             cursor: pointer;
         }
 
-        /* Decision Support Card */
         .advice-box {
             background: rgba(56, 189, 248, 0.08);
             border-left: 4px solid var(--accent-primary);
@@ -213,7 +206,6 @@
             border-left-color: var(--accent-warning);
         }
 
-        /* Tables */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -252,51 +244,45 @@
 </head>
 <body>
 
-    <!-- Üst Başlık ve Aksiyonlar -->
     <header>
         <div class="header-title">
-            <h1>KOBİ Kur Riski & Hedging Panosu <span class="badge-live">● TCMB EVDS Canlı Entegrasyon</span></h1>
+            <h1><span id="txt-app-title">KOBİ Kur Riski & Hedging Panosu</span> <span class="badge-live" id="txt-live-badge">● TCMB EVDS Canlı Entegrasyon</span></h1>
         </div>
         <div class="header-actions">
-            <button class="btn" onclick="toggleContrast()">👁️ Yüksek Kontrast</button>
-            <button class="btn" onclick="exportCSV()">📥 CSV Rapor İndir</button>
+            <button class="btn" onclick="toggleLanguage()">🌐 <span id="lang-btn-text">English</span></button>
+            <button class="btn" onclick="toggleContrast()">👁️ <span id="txt-contrast-btn">Yüksek Kontrast</span></button>
+            <button class="btn" onclick="exportCSV()">📥 <span id="txt-csv-btn">CSV Rapor İndir</span></button>
         </div>
     </header>
 
     <div class="dashboard-grid">
-        
-        <!-- KPI 1: USD/TRY -->
         <div class="card col-3">
-            <div class="card-title">USD / TRY Gösterge Kuru</div>
+            <div class="card-title" id="txt-usd-title">USD / TRY Gösterge Kuru</div>
             <div class="kpi-val" id="usd-val">34.25 <span style="font-size:1rem; font-weight:normal;">TL</span></div>
-            <div class="kpi-sub"><span class="tag-up">▲ +%0.45</span> <span>Önceki Gün: 34.10 TL</span></div>
+            <div class="kpi-sub"><span class="tag-up">▲ +%0.45</span> <span id="txt-prev-usd">Önceki Gün: 34.10 TL</span></div>
         </div>
 
-        <!-- KPI 2: EUR/TRY -->
         <div class="card col-3">
-            <div class="card-title">EUR / TRY Gösterge Kuru</div>
+            <div class="card-title" id="txt-eur-title">EUR / TRY Gösterge Kuru</div>
             <div class="kpi-val" id="eur-val">37.10 <span style="font-size:1rem; font-weight:normal;">TL</span></div>
-            <div class="kpi-sub"><span class="tag-down">▼ -%0.12</span> <span>Önceki Gün: 37.15 TL</span></div>
+            <div class="kpi-sub"><span class="tag-down">▼ -%0.12</span> <span id="txt-prev-eur">Önceki Gün: 37.15 TL</span></div>
         </div>
 
-        <!-- KPI 3: Volatilite -->
         <div class="card col-3">
-            <div class="card-title">30 Günlük Kur Oynaklığı (Oynaklık)</div>
+            <div class="card-title" id="txt-vol-title">30 Günlük Kur Oynaklığı</div>
             <div class="kpi-val" style="color: var(--accent-purple);">%12.4</div>
-            <div class="kpi-sub"><span>TÜFE Aylık: %2.97</span></div>
+            <div class="kpi-sub"><span id="txt-cpi-info">TÜFE Aylık: %2.97</span></div>
         </div>
 
-        <!-- KPI 4: Net Risk Maruziyeti -->
         <div class="card col-3">
-            <div class="card-title">Simüle Edilen Net Risk Etkisi</div>
+            <div class="card-title" id="txt-risk-title">Simüle Edilen Net Risk Etkisi</div>
             <div class="kpi-val" id="kpi-risk-diff" style="color: var(--accent-warning);">+342.500 TL</div>
             <div class="kpi-sub"><span id="kpi-risk-pct">%10 Kur Şoku Altında</span></div>
         </div>
 
-        <!-- GRAFİK 1: Kur Değişim Trendi -->
         <div class="card col-8">
             <div class="card-header">
-                <div class="card-title">Zaman İçinde Kur Değişimi (TCMB)</div>
+                <div class="card-title" id="txt-chart1-title">Zaman İçinde Kur Değişimi (TCMB)</div>
                 <div>
                     <button class="time-btn active" onclick="updateChartPeriod('30D')">30G</button>
                     <button class="time-btn" onclick="updateChartPeriod('60D')">60G</button>
@@ -306,53 +292,49 @@
             <canvas id="lineChart" height="135"></canvas>
         </div>
 
-        <!-- SİMÜLATÖR: Risk & Forward Hesaplayıcı -->
         <div class="card col-4">
-            <div class="card-title" style="margin-bottom:12px;">Senaryo & Hedging Simülatörü</div>
+            <div class="card-title" id="txt-sim-title" style="margin-bottom:12px;">Senaryo & Hedging Simülatörü</div>
             
             <div class="form-group">
-                <label>İthalat Tutarı ($):</label>
+                <label id="lbl-import-amount">İthalat Tutarı ($):</label>
                 <input type="number" id="sim-amount" class="form-control" value="100000" step="5000" oninput="runSimulation()">
             </div>
 
             <div class="form-group">
-                <label>Ödeme Vadesi: <span id="val-days" style="color:var(--accent-primary); font-weight:bold;">60 Gün</span></label>
+                <label><span id="lbl-payment-term">Ödeme Vadesi:</span> <span id="val-days" style="color:var(--accent-primary); font-weight:bold;">60 Gün</span></label>
                 <input type="range" id="sim-days" min="30" max="180" value="60" step="30" oninput="runSimulation()">
             </div>
 
             <div class="form-group">
-                <label>Kur Artış Şoku (%): <span id="val-shock" style="color:var(--accent-warning); font-weight:bold;">%10</span></label>
+                <label><span id="lbl-rate-shock">Kur Artış Şoku (%):</span> <span id="val-shock" style="color:var(--accent-warning); font-weight:bold;">%10</span></label>
                 <input type="range" id="sim-shock" min="0" max="30" value="10" step="1" oninput="runSimulation()">
             </div>
 
             <div class="form-group">
-                <label>Forward Koruma Oranı (%): <span id="val-hedge" style="color:var(--accent-success); font-weight:bold;">%50 Koruma</span></label>
+                <label><span id="lbl-hedge-ratio">Forward Koruma Oranı (%):</span> <span id="val-hedge" style="color:var(--accent-success); font-weight:bold;">%50 Koruma</span></label>
                 <input type="range" id="sim-hedge" min="0" max="100" value="50" step="10" oninput="runSimulation()">
             </div>
 
-            <!-- Akıllı Karar Destek Asistanı -->
             <div class="advice-box" id="advice-card">
-                <strong>💡 Karar Destek Önerisi:</strong>
+                <strong id="txt-advice-head">💡 Karar Destek Önerisi:</strong>
                 <div id="advice-text" style="margin-top:4px;">Yükleniyor...</div>
             </div>
         </div>
 
-        <!-- GRAFİK 2: Maliyet Karşılaştırması -->
         <div class="card col-6">
-            <div class="card-title">Senaryolara Göre Toplam TL Maliyeti Karşılaştırması</div>
+            <div class="card-title" id="txt-chart2-title">Senaryolara Göre Toplam TL Maliyeti Karşılaştırması</div>
             <canvas id="barChart" height="150"></canvas>
         </div>
 
-        <!-- TABLO: Günlük Kur Geçmişi -->
         <div class="card col-6">
-            <div class="card-title">TCMB Kur Geçmişi Tablosu</div>
+            <div class="card-title" id="txt-table-title">TCMB Kur Geçmişi Tablosu</div>
             <table id="history-table">
                 <thead>
                     <tr>
-                        <th>Tarih</th>
+                        <th id="th-date">Tarih</th>
                         <th>USD / TRY</th>
                         <th>EUR / TRY</th>
-                        <th>Günlük Değişim</th>
+                        <th id="th-change">Günlük Değişim</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -374,32 +356,117 @@
                         <td>37.00 TL</td>
                         <td><span class="tag-down">-%0.10</span></td>
                     </tr>
-                    <tr>
-                        <td>23.10.2026</td>
-                        <td>34.00 TL</td>
-                        <td>36.90 TL</td>
-                        <td><span class="tag-up">+%0.20</span></td>
-                    </tr>
                 </tbody>
             </table>
         </div>
-
     </div>
 
     <script>
-        // GLOBAL DEĞİŞKENLER VE GRAFİKLER
         let lineChart, barChart;
         const baseUSD = 34.25;
         const baseEUR = 37.10;
+        let currentLang = 'TR';
 
-        // Sayfa Yüklendiğinde Başlat
+        const i18n = {
+            TR: {
+                appTitle: "KOBİ Kur Riski & Hedging Panosu",
+                liveBadge: "● TCMB EVDS Canlı Entegrasyon",
+                langBtn: "English",
+                contrastBtn: "Yüksek Kontrast",
+                csvBtn: "CSV Rapor İndir",
+                usdTitle: "USD / TRY Gösterge Kuru",
+                eurTitle: "EUR / TRY Gösterge Kuru",
+                volTitle: "30 Günlük Kur Oynaklığı",
+                riskTitle: "Simüle Edilen Net Risk Etkisi",
+                prevUsd: "Önceki Gün: 34.10 TL",
+                prevEur: "Önceki Gün: 37.15 TL",
+                cpiInfo: "TÜFE Aylık: %2.97",
+                chart1Title: "Zaman İçinde Kur Değişimi (TCMB)",
+                simTitle: "Senaryo & Hedging Simülatörü",
+                importAmount: "İthalat Tutarı ($):",
+                paymentTerm: "Ödeme Vadesi:",
+                rateShock: "Kur Artış Şoku (%):",
+                hedgeRatio: "Forward Koruma Oranı (%):",
+                adviceHead: "💡 Karar Destek Önerisi:",
+                chart2Title: "Senaryolara Göre Toplam TL Maliyeti Karşılaştırması",
+                tableTitle: "TCMB Kur Geçmişi Tablosu",
+                thDate: "Tarih",
+                thChange: "Günlük Değişim",
+                protectionText: "Koruma",
+                underShock: "Kur Şoku Altında",
+                barLabels: ['Mevcut Maliyet', 'Şok Maliyeti (Korumasız)', 'Hedging Korumalı Maliyet']
+            },
+            EN: {
+                appTitle: "SME FX Risk & Hedging Dashboard",
+                liveBadge: "● CBRT EVDS Live Integration",
+                langBtn: "Türkçe",
+                contrastBtn: "High Contrast",
+                csvBtn: "Export CSV Report",
+                usdTitle: "USD / TRY Benchmark Rate",
+                eurTitle: "EUR / TRY Benchmark Rate",
+                volTitle: "30-Day FX Volatility",
+                riskTitle: "Simulated Net Risk Impact",
+                prevUsd: "Prev Day: 34.10 TL",
+                prevEur: "Prev Day: 37.15 TL",
+                cpiInfo: "Monthly CPI: %2.97",
+                chart1Title: "FX Exchange Rate Trend (CBRT)",
+                simTitle: "Scenario & Hedging Simulator",
+                importAmount: "Import Amount ($):",
+                paymentTerm: "Payment Term:",
+                rateShock: "FX Rate Shock (%):",
+                hedgeRatio: "Forward Hedge Ratio (%):",
+                adviceHead: "💡 Decision Support Advice:",
+                chart2Title: "Total Cost Comparison by Scenario (TRY)",
+                tableTitle: "CBRT Historical FX Rates",
+                thDate: "Date",
+                thChange: "Daily Change",
+                protectionText: "Hedged",
+                underShock: "Under FX Shock",
+                barLabels: ['Current Cost', 'Shock Cost (Unhedged)', 'Hedged Cost']
+            }
+        };
+
         window.onload = function() {
             initLineChart();
             initBarChart();
             runSimulation();
         };
 
-        // 1. ÇİZGİ GRAFİĞİ (Line Chart)
+        function toggleLanguage() {
+            currentLang = currentLang === 'TR' ? 'EN' : 'TR';
+            const dict = i18n[currentLang];
+
+            document.getElementById('txt-app-title').innerText = dict.appTitle;
+            document.getElementById('txt-live-badge').innerText = dict.liveBadge;
+            document.getElementById('lang-btn-text').innerText = dict.langBtn;
+            document.getElementById('txt-contrast-btn').innerText = dict.contrastBtn;
+            document.getElementById('txt-csv-btn').innerText = dict.csvBtn;
+            document.getElementById('txt-usd-title').innerText = dict.usdTitle;
+            document.getElementById('txt-eur-title').innerText = dict.eurTitle;
+            document.getElementById('txt-vol-title').innerText = dict.volTitle;
+            document.getElementById('txt-risk-title').innerText = dict.riskTitle;
+            document.getElementById('txt-prev-usd').innerText = dict.prevUsd;
+            document.getElementById('txt-prev-eur').innerText = dict.prevEur;
+            document.getElementById('txt-cpi-info').innerText = dict.cpiInfo;
+            document.getElementById('txt-chart1-title').innerText = dict.chart1Title;
+            document.getElementById('txt-sim-title').innerText = dict.simTitle;
+            document.getElementById('lbl-import-amount').innerText = dict.importAmount;
+            document.getElementById('lbl-payment-term').innerText = dict.paymentTerm;
+            document.getElementById('lbl-rate-shock').innerText = dict.rateShock;
+            document.getElementById('lbl-hedge-ratio').innerText = dict.hedgeRatio;
+            document.getElementById('txt-advice-head').innerText = dict.adviceHead;
+            document.getElementById('txt-chart2-title').innerText = dict.chart2Title;
+            document.getElementById('txt-table-title').innerText = dict.tableTitle;
+            document.getElementById('th-date').innerText = dict.thDate;
+            document.getElementById('th-change').innerText = dict.thChange;
+
+            if(barChart) {
+                barChart.data.labels = dict.barLabels;
+                barChart.update();
+            }
+            runSimulation();
+        }
+
         function initLineChart() {
             const ctx = document.getElementById('lineChart').getContext('2d');
             lineChart = new Chart(ctx, {
@@ -407,22 +474,8 @@
                 data: {
                     labels: ['01.10', '05.10', '10.10', '15.10', '20.10', '26.10'],
                     datasets: [
-                        {
-                            label: 'USD / TRY',
-                            data: [33.80, 33.92, 34.05, 34.10, 34.18, 34.25],
-                            borderColor: '#38bdf8',
-                            backgroundColor: 'rgba(56, 189, 248, 0.08)',
-                            fill: true,
-                            tension: 0.3
-                        },
-                        {
-                            label: 'EUR / TRY',
-                            data: [36.50, 36.70, 36.85, 37.00, 37.05, 37.10],
-                            borderColor: '#a855f7',
-                            backgroundColor: 'rgba(168, 85, 247, 0.08)',
-                            fill: true,
-                            tension: 0.3
-                        }
+                        { label: 'USD / TRY', data: [33.80, 33.92, 34.05, 34.10, 34.18, 34.25], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.08)', fill: true, tension: 0.3 },
+                        { label: 'EUR / TRY', data: [36.50, 36.70, 36.85, 37.00, 37.05, 37.10], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.08)', fill: true, tension: 0.3 }
                     ]
                 },
                 options: {
@@ -436,13 +489,12 @@
             });
         }
 
-        // 2. BAR GRAFİĞİ (Bar Chart)
         function initBarChart() {
             const ctx = document.getElementById('barChart').getContext('2d');
             barChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Mevcut Maliyet', 'Şok Maliyeti (Korumasız)', 'Hedging Korumalı Maliyet'],
+                    labels: i18n[currentLang].barLabels,
                     datasets: [{
                         label: 'TL Maliyeti',
                         data: [3425000, 3767500, 3596250],
@@ -461,24 +513,21 @@
             });
         }
 
-        // 3. SİMÜLASYON HESAPLAMA MOTORU
         function runSimulation() {
+            const dict = i18n[currentLang];
             const amount = parseFloat(document.getElementById('sim-amount').value) || 0;
             const days = document.getElementById('sim-days').value;
             const shockPct = parseFloat(document.getElementById('sim-shock').value);
             const hedgePct = parseFloat(document.getElementById('sim-hedge').value);
 
-            // Label Güncellemeleri
-            document.getElementById('val-days').innerText = days + ' Gün';
+            document.getElementById('val-days').innerText = days + (currentLang === 'TR' ? ' Gün' : ' Days');
             document.getElementById('val-shock').innerText = '%' + shockPct;
-            document.getElementById('val-hedge').innerText = '%' + hedgePct + ' Koruma';
+            document.getElementById('val-hedge').innerText = '%' + hedgePct + ' ' + dict.protectionText;
 
-            // Maliyet Hesapları
             const currentCost = amount * baseUSD;
             const shockedRate = baseUSD * (1 + (shockPct / 100));
             const unhedgedCost = amount * shockedRate;
             
-            // Forward/Hedge Koruması (Korunan kısım sabit kurdan kalır)
             const hedgedAmount = amount * (hedgePct / 100);
             const unhedgedAmount = amount * (1 - (hedgePct / 100));
             const hedgedCost = (hedgedAmount * baseUSD) + (unhedgedAmount * shockedRate);
@@ -486,30 +535,30 @@
             const riskDiff = unhedgedCost - currentCost;
             const savedDiff = unhedgedCost - hedgedCost;
 
-            // KPI Güncelleme
             document.getElementById('kpi-risk-diff').innerText = '+' + riskDiff.toLocaleString('tr-TR') + ' TL';
-            document.getElementById('kpi-risk-pct').innerText = '%' + shockPct + ' Kur Şoku Altında';
+            document.getElementById('kpi-risk-pct').innerText = '%' + shockPct + ' ' + dict.underShock;
 
-            // Bar Grafik Güncelleme
             if(barChart) {
                 barChart.data.datasets[0].data = [currentCost, unhedgedCost, hedgedCost];
                 barChart.update();
             }
 
-            // Karar Destek Metni Güncelleme
             const adviceBox = document.getElementById('advice-card');
             const adviceText = document.getElementById('advice-text');
 
             if (hedgePct < 40 && shockPct >= 10) {
                 adviceBox.className = "advice-box warning";
-                adviceText.innerHTML = `⚠️ High Risk: Koruma oranınız (%${hedgePct}) düşük. Kur şokunda ekstra <strong>${riskDiff.toLocaleString('tr-TR')} TL</strong> zarar riski var. Hedging oranını en az %60'a çıkarmanız önerilir.`;
+                adviceText.innerHTML = currentLang === 'TR' 
+                    ? `⚠️ Yüksek Risk: Koruma oranınız (%${hedgePct}) düşük. Kur şokunda ekstra <strong>${riskDiff.toLocaleString('tr-TR')} TL</strong> zarar riski var. Koruma oranını artırın.`
+                    : `⚠️ High Risk: Low hedge ratio (%${hedgePct}). Unhedged loss potential: <strong>${riskDiff.toLocaleString('tr-TR')} TRY</strong>. Consider increasing hedge ratio.`;
             } else {
                 adviceBox.className = "advice-box";
-                adviceText.innerHTML = `✅ Dengeli Strateji: %${hedgePct} Forward koruması sayesinde muhtemel şok zararının <strong>${savedDiff.toLocaleString('tr-TR')} TL</strong> kadarlık kısmı engellendi.`;
+                adviceText.innerHTML = currentLang === 'TR' 
+                    ? `✅ Dengeli Strateji: %${hedgePct} Forward koruması ile muhtemel zararın <strong>${savedDiff.toLocaleString('tr-TR')} TL</strong> kadarlık kısmı engellendi.`
+                    : `✅ Balanced Strategy: %${hedgePct} Forward hedge prevented <strong>${savedDiff.toLocaleString('tr-TR')} TRY</strong> of potential currency loss.`;
             }
         }
 
-        // 4. ZAMAN ARALIĞI BUTONLARI
         function updateChartPeriod(period) {
             document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
@@ -527,12 +576,10 @@
             lineChart.update();
         }
 
-        // 5. YÜKSEK KONTRAST MODU (Erişilebilirlik)
         function toggleContrast() {
             document.body.classList.toggle('high-contrast');
         }
 
-        // 6. CSV İNDİRME FONKSİYONU
         function exportCSV() {
             let csv = 'Tarih,USD/TRY,EUR/TRY\n26.10.2026,34.25,37.10\n25.10.2026,34.10,37.15\n24.10.2026,34.05,37.00\n';
             const blob = new Blob([csv], { type: 'text/csv' });
